@@ -1,45 +1,54 @@
-const margin = { top: 40, right: 40, bottom: 60, left: 60 };
-const width = document.querySelector('#vis').clientWidth - margin.left - margin.right;
-const height = 600 - margin.top - margin.bottom;
-
-const svg = d3.select("#vis")
-    .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
+const margin = { top: 40, right: 40, bottom: 100, left: 80 };
+let width, height, svg;
+let allData = [];
 
 const parseTime = d3.timeParse("%m/%d/%Y %I:%M:%S %p");
-
-let allData = [];
 
 // Basic data loading skeleton
 d3.csv("data/Crash_Reporting.csv").then(data => {
     console.log("Data loaded:", data.length, "rows");
 
+    // Hide loading, show visualization container to get width
+    d3.select("#loading").style("display", "none");
+    d3.select("#vis").style("display", "block");
+
+    // Calculate dimensions now that container is visible
+    const visContainer = document.querySelector('#vis');
+    width = visContainer.clientWidth - margin.left - margin.right;
+    height = 600 - margin.top - margin.bottom;
+
+    // Initialize SVG
+    svg = d3.select("#vis")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
     // Process data
     allData = data.map(d => {
         const date = parseTime(d["Crash Date/Time"]);
+        const rawSeverity = d["Injury Severity"] || "Unknown";
+        const rawWeather = d["Weather"] || "Unknown";
+        const rawLight = d["Light"] || "Unknown";
+        let normalizedLight = rawLight.trim().toUpperCase();
+        if (normalizedLight.startsWith("DARK")) normalizedLight = "DARK";
+        
         return {
             ...d,
             date: date,
             hour: date ? date.getHours() : null,
             day: date ? date.getDay() : null,
             month: date ? date.getMonth() : null,
-            weather: d["Weather"],
-            light: d["Light"]
+            weather: rawWeather.trim().toUpperCase(),
+            light: normalizedLight,
+            severity: rawSeverity.trim().toUpperCase()
         };
-    }).filter(d => d.date !== null); // Remove rows with invalid dates
+    }).filter(d => d.date !== null);
 
     populateFilters(allData);
-    updateVisualization(allData);
-
-    // Hide loading, show visualization
-    d3.select("#loading").style("display", "none");
-    d3.select("#vis").style("display", "block");
-
-    d3.selectAll(".custom-select").on("change", applyFilters);
     bindTimeRangeSliders();
+    applyFilters(); // Initial render
 
 }).catch(error => {
     console.error("Error loading data:", error);
@@ -93,51 +102,185 @@ function populateFilters(data) {
     const weathers = [...new Set(data.map(d => d.weather))].sort();
     const lights = [...new Set(data.map(d => d.light))].sort();
 
-    const weatherSelect = d3.select("#filter-weather");
-    weathers.forEach(w => {
-        if (w) weatherSelect.append("option").text(w).attr("value", w);
+    const weatherContainer = d3.select("#filter-weather-container");
+    weathers.forEach((w, i) => {
+        if (!w) return;
+        const id = `w-${i}`;
+        const div = weatherContainer.append("div").attr("class", "form-check");
+        div.append("input")
+            .attr("class", "form-check-input")
+            .attr("type", "checkbox")
+            .attr("value", w)
+            .attr("id", id)
+            .on("change", applyFilters);
+        div.append("label")
+            .attr("class", "form-check-label")
+            .attr("for", id)
+            .text(w);
     });
 
-    const lightSelect = d3.select("#filter-light");
-    lights.forEach(l => {
-        if (l) lightSelect.append("option").text(l).attr("value", l);
+    const lightContainer = d3.select("#filter-light-container");
+    lights.forEach((l, i) => {
+        if (!l) return;
+        const id = `l-${i}`;
+        const div = lightContainer.append("div").attr("class", "form-check");
+        div.append("input")
+            .attr("class", "form-check-input")
+            .attr("type", "checkbox")
+            .attr("value", l)
+            .attr("id", id)
+            .on("change", applyFilters);
+        div.append("label")
+            .attr("class", "form-check-label")
+            .attr("for", id)
+            .text(l);
     });
+
+    d3.selectAll("#filter-day-container input, #filter-month-container input").on("change", applyFilters);
 }
 
 function applyFilters() {
+    if (!allData.length) return;
+
     const hourLo = +d3.select("#filter-time-start").property("value");
     const hourHi = +d3.select("#filter-time-end").property("value");
 
-    const dayVal = d3.select("#filter-day").property("value");
-    const monthVal = d3.select("#filter-month").property("value");
-    const weatherVal = d3.select("#filter-weather").property("value");
-    const lightVal = d3.select("#filter-light").property("value");
+    const selectedDays = [];
+    d3.selectAll("#filter-day-container input:checked").each(function () { selectedDays.push(this.value); });
+
+    const selectedMonths = [];
+    d3.selectAll("#filter-month-container input:checked").each(function () { selectedMonths.push(+this.value); });
+
+    const selectedWeather = [];
+    d3.selectAll("#filter-weather-container input:checked").each(function () { selectedWeather.push(this.value); });
+
+    const selectedLight = [];
+    d3.selectAll("#filter-light-container input:checked").each(function () { selectedLight.push(this.value); });
 
     const filtered = allData.filter(d => {
         const timeMatch = d.hour >= hourLo && d.hour <= hourHi;
-
-        // Day of Week Filter
-        let dayMatch = true;
-        if (dayVal === "weekday") dayMatch = d.day >= 1 && d.day <= 5;
-        else if (dayVal === "weekend") dayMatch = d.day === 0 || d.day === 6;
-
-        // Month Filter
-        let monthMatch = monthVal === "all" || d.month === +monthVal;
-
-        // Weather Filter
-        let weatherMatch = weatherVal === "all" || d.weather === weatherVal;
-
-        // Light Filter
-        let lightMatch = lightVal === "all" || d.light === lightVal;
-
+        const dayMatch = selectedDays.length === 0 || selectedDays.includes(d.day.toString());
+        const monthMatch = selectedMonths.length === 0 || selectedMonths.includes(d.month);
+        const weatherMatch = selectedWeather.length === 0 || selectedWeather.includes(d.weather);
+        const lightMatch = selectedLight.length === 0 || selectedLight.includes(d.light);
         return timeMatch && dayMatch && monthMatch && weatherMatch && lightMatch;
     });
 
     updateVisualization(filtered);
 }
 
+const SEVERITY_ORDER = [
+    "NO APPARENT INJURY",
+    "POSSIBLE INJURY",
+    "SUSPECTED MINOR INJURY",
+    "SUSPECTED SERIOUS INJURY",
+    "FATAL INJURY"
+];
+
 function updateVisualization(data) {
-    console.log("Updating visualization with", data.length, "rows");
-    // Placeholder for visualization update logic
-    // e.g., svg.selectAll(".dot").data(data)...
+    if (!svg) return;
+
+    const counts = d3.rollup(data, v => v.length, d => d.severity);
+
+    // Ensure all categories are present, even if count is 0
+    const plotData = SEVERITY_ORDER.map(severity => ({
+        severity: severity,
+        count: counts.get(severity) || 0
+    }));
+
+    // Handle any extra categories not in the main order if they exist
+    counts.forEach((count, severity) => {
+        if (!SEVERITY_ORDER.includes(severity) && severity !== "UNKNOWN") {
+            plotData.push({ severity, count });
+        }
+    });
+
+    const noInjuryCount = counts.get("NO APPARENT INJURY") || 0;
+
+    const x = d3.scaleBand()
+        .domain(plotData.map(d => d.severity))
+        .range([0, width])
+        .padding(0.3);
+
+    const y = d3.scaleLinear()
+        .domain([0, noInjuryCount || 10])
+        .range([height, 0]);
+
+    svg.selectAll(".axis").remove();
+
+    svg.append("g")
+        .attr("class", "axis x-axis")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .attr("transform", "rotate(-35)");
+
+    svg.append("g")
+        .attr("class", "axis y-axis")
+        .call(d3.axisLeft(y).ticks(10, "s"));
+
+    svg.selectAll(".axis-title").remove();
+    svg.append("text")
+        .attr("class", "axis-title axis-label")
+        .attr("x", width / 2)
+        .attr("y", height + margin.bottom - 10)
+        .attr("text-anchor", "middle")
+        .text("Injury Severity");
+
+    svg.append("text")
+        .attr("class", "axis-title axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -margin.left + 15)
+        .attr("text-anchor", "middle")
+        .text("Number of Accidents");
+
+    const bars = svg.selectAll(".bar")
+        .data(plotData, d => d.severity);
+
+    bars.exit()
+        .transition()
+        .duration(500)
+        .attr("y", height)
+        .attr("height", 0)
+        .remove();
+
+    const barsEnter = bars.enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.severity))
+        .attr("y", height)
+        .attr("width", x.bandwidth())
+        .attr("height", 0)
+        .attr("rx", 4);
+
+    barsEnter.merge(bars)
+        .transition()
+        .duration(750)
+        .attr("x", d => x(d.severity))
+        .attr("y", d => y(d.count))
+        .attr("width", x.bandwidth())
+        .attr("height", d => height - y(d.count));
+
+    const tooltip = d3.select("#tooltip");
+
+    svg.selectAll(".bar")
+        .on("mouseover", function (event, d) {
+            d3.select(this).style("fill", "#6366f1");
+            tooltip.transition().duration(200).style("opacity", 1);
+            tooltip.html(`<strong>${d.severity}</strong><br/>Count: ${d3.format(",")(d.count)}`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mousemove", function (event) {
+            tooltip.style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function () {
+            d3.select(this).style("fill", null);
+            tooltip.transition().duration(500).style("opacity", 0);
+        });
 }
