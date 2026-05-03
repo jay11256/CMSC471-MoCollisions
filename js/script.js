@@ -38,14 +38,56 @@ d3.csv("data/Crash_Reporting.csv").then(data => {
     d3.select("#loading").style("display", "none");
     d3.select("#vis").style("display", "block");
 
-    // Add event listeners
-    d3.selectAll(".custom-select").on("change", () => {
-        applyFilters();
-    });
+    d3.selectAll(".custom-select").on("change", applyFilters);
+    bindTimeRangeSliders();
 
 }).catch(error => {
     console.error("Error loading data:", error);
 });
+
+function formatHour12(h) {
+    const period = h >= 12 ? "PM" : "AM";
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12}:00 ${period}`;
+}
+
+function updateTimeRangeUI() {
+    const s = +d3.select("#filter-time-start").property("value");
+    const e = +d3.select("#filter-time-end").property("value");
+    d3.select("#time-range-label").text(`${formatHour12(s)} – ${formatHour12(e)}`);
+
+    const pctLeft = (s / 23) * 100;
+    const pctWidth = ((e - s) / 23) * 100;
+    const minFillPct = e === s ? 1.2 : 0.35;
+    d3.select("#time-range-fill")
+        .style("left", pctLeft + "%")
+        .style("width", Math.max(pctWidth, minFillPct) + "%");
+
+    const distLeft = s;
+    const distRight = 23 - e;
+    d3.select("#filter-time-start").style("z-index", distLeft <= distRight ? 4 : 3);
+    d3.select("#filter-time-end").style("z-index", distRight < distLeft ? 4 : 3);
+}
+
+function bindTimeRangeSliders() {
+    d3.select("#filter-time-start").on("input", function () {
+        let s = +this.value;
+        const endSel = d3.select("#filter-time-end");
+        let e = +endSel.property("value");
+        if (s > e) endSel.property("value", s);
+        updateTimeRangeUI();
+        applyFilters();
+    });
+    d3.select("#filter-time-end").on("input", function () {
+        let e = +this.value;
+        const startSel = d3.select("#filter-time-start");
+        let s = +startSel.property("value");
+        if (e < s) startSel.property("value", e);
+        updateTimeRangeUI();
+        applyFilters();
+    });
+    updateTimeRangeUI();
+}
 
 function populateFilters(data) {
     const weathers = [...new Set(data.map(d => d.weather))].sort();
@@ -63,19 +105,16 @@ function populateFilters(data) {
 }
 
 function applyFilters() {
-    const timeVal = d3.select("#filter-time").property("value");
+    const hourLo = +d3.select("#filter-time-start").property("value");
+    const hourHi = +d3.select("#filter-time-end").property("value");
+
     const dayVal = d3.select("#filter-day").property("value");
     const monthVal = d3.select("#filter-month").property("value");
     const weatherVal = d3.select("#filter-weather").property("value");
     const lightVal = d3.select("#filter-light").property("value");
 
     const filtered = allData.filter(d => {
-        // Time of Day Filter
-        let timeMatch = true;
-        if (timeVal === "morning") timeMatch = d.hour >= 6 && d.hour < 12;
-        else if (timeVal === "afternoon") timeMatch = d.hour >= 12 && d.hour < 18;
-        else if (timeVal === "evening") timeMatch = d.hour >= 18 && d.hour < 24;
-        else if (timeVal === "night") timeMatch = d.hour >= 0 && d.hour < 6;
+        const timeMatch = d.hour >= hourLo && d.hour <= hourHi;
 
         // Day of Week Filter
         let dayMatch = true;
