@@ -16,7 +16,7 @@ let allData = [];
 // Basic data loading skeleton
 d3.csv("data/Crash_Reporting.csv").then(data => {
     console.log("Data loaded:", data.length, "rows");
-    
+
     // Process data
     allData = data.map(d => {
         const date = parseTime(d["Crash Date/Time"]);
