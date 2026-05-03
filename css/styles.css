@@ -160,6 +160,12 @@ body {
     font-size: 0.7rem;
 }
 
+.bar-label {
+    fill: var(--muted-color);
+    font-size: 0.65rem;
+    font-weight: 600;
+}
+
 .time-range-controls {
     padding-top: 0.15rem;
 }

@@ -33,7 +33,7 @@ d3.csv("data/Crash_Reporting.csv").then(data => {
         const rawLight = d["Light"] || "Unknown";
         let normalizedLight = rawLight.trim().toUpperCase();
         if (normalizedLight.startsWith("DARK")) normalizedLight = "DARK";
-        
+
         return {
             ...d,
             date: date,
@@ -261,9 +261,31 @@ function updateVisualization(data) {
         .transition()
         .duration(750)
         .attr("x", d => x(d.severity))
-        .attr("y", d => y(d.count))
+        .attr("y", d => d.count > 0 ? Math.min(y(d.count), height - 2) : y(d.count))
         .attr("width", x.bandwidth())
-        .attr("height", d => height - y(d.count));
+        .attr("height", d => d.count > 0 ? Math.max(2, height - y(d.count)) : 0);
+
+    // Labels
+    const labels = svg.selectAll(".bar-label")
+        .data(plotData, d => d.severity);
+
+    labels.exit().remove();
+
+    const labelsEnter = labels.enter()
+        .append("text")
+        .attr("class", "bar-label")
+        .attr("text-anchor", "middle")
+        .attr("x", d => x(d.severity) + x.bandwidth() / 2)
+        .attr("y", height)
+        .style("opacity", 0);
+
+    labelsEnter.merge(labels)
+        .transition()
+        .duration(750)
+        .attr("x", d => x(d.severity) + x.bandwidth() / 2)
+        .attr("y", d => (d.count > 0 ? Math.min(y(d.count), height - 2) : y(d.count)) - 5)
+        .text(d => d.count > 0 ? d3.format(",")(d.count) : "")
+        .style("opacity", 1);
 
     const tooltip = d3.select("#tooltip");
 
