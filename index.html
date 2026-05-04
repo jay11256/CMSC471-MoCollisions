@@ -25,19 +25,18 @@
                 <div class="row g-3">
                     <div class="col-md-4 col-sm-12">
                         <span class="form-label d-block">Time of day</span>
-                        <div class="time-range-controls">
-                            <div id="time-range-label" class="time-range-label" aria-live="polite">12:00 AM – 11:00 PM</div>
-                            <div class="dual-range-wrap" id="time-dual-range">
-                                <div class="dual-range-track" aria-hidden="true"></div>
-                                <div class="dual-range-fill" id="time-range-fill" aria-hidden="true"></div>
-                                <label for="filter-time-start" class="visually-hidden">Earliest hour</label>
-                                <input type="range" id="filter-time-start" class="dual-range-input" min="0" max="23" value="0">
-                                <label for="filter-time-end" class="visually-hidden">Latest hour</label>
-                                <input type="range" id="filter-time-end" class="dual-range-input" min="0" max="23" value="23">
+                        <div class="time-input-controls">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-5">
+                                    <input type="time" id="filter-time-start" class="form-control" value="00:00">
+                                </div>
+                                <div class="col-2 text-center text-muted">to</div>
+                                <div class="col-5">
+                                    <input type="time" id="filter-time-end" class="form-control" value="23:59">
+                                </div>
                             </div>
-                            <div class="time-range-axis small text-muted">
-                                <span>12 AM</span>
-                                <span>11 PM</span>
+                            <div class="time-range-axis small text-muted mt-1">
+                                <span>(HH:MM)</span>
                             </div>
                         </div>
                     </div>

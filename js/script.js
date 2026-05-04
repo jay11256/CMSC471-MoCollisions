@@ -38,6 +38,7 @@ d3.csv("data/Crash_Reporting.csv").then(data => {
             ...d,
             date: date,
             hour: date ? date.getHours() : null,
+            minutes: date ? date.getHours() * 60 + date.getMinutes() : null,
             day: date ? date.getDay() : null,
             month: date ? date.getMonth() : null,
             weather: rawWeather.trim().toUpperCase(),
@@ -47,55 +48,15 @@ d3.csv("data/Crash_Reporting.csv").then(data => {
     }).filter(d => d.date !== null);
 
     populateFilters(allData);
-    bindTimeRangeSliders();
+    bindTimeInputs();
     applyFilters(); // Initial render
 
 }).catch(error => {
     console.error("Error loading data:", error);
 });
 
-function formatHour12(h) {
-    const period = h >= 12 ? "PM" : "AM";
-    const h12 = h % 12 === 0 ? 12 : h % 12;
-    return `${h12}:00 ${period}`;
-}
-
-function updateTimeRangeUI() {
-    const s = +d3.select("#filter-time-start").property("value");
-    const e = +d3.select("#filter-time-end").property("value");
-    d3.select("#time-range-label").text(`${formatHour12(s)} – ${formatHour12(e)}`);
-
-    const pctLeft = (s / 23) * 100;
-    const pctWidth = ((e - s) / 23) * 100;
-    const minFillPct = e === s ? 1.2 : 0.35;
-    d3.select("#time-range-fill")
-        .style("left", pctLeft + "%")
-        .style("width", Math.max(pctWidth, minFillPct) + "%");
-
-    const distLeft = s;
-    const distRight = 23 - e;
-    d3.select("#filter-time-start").style("z-index", distLeft <= distRight ? 4 : 3);
-    d3.select("#filter-time-end").style("z-index", distRight < distLeft ? 4 : 3);
-}
-
-function bindTimeRangeSliders() {
-    d3.select("#filter-time-start").on("input", function () {
-        let s = +this.value;
-        const endSel = d3.select("#filter-time-end");
-        let e = +endSel.property("value");
-        if (s > e) endSel.property("value", s);
-        updateTimeRangeUI();
-        applyFilters();
-    });
-    d3.select("#filter-time-end").on("input", function () {
-        let e = +this.value;
-        const startSel = d3.select("#filter-time-start");
-        let s = +startSel.property("value");
-        if (e < s) startSel.property("value", e);
-        updateTimeRangeUI();
-        applyFilters();
-    });
-    updateTimeRangeUI();
+function bindTimeInputs() {
+    d3.selectAll("#filter-time-start, #filter-time-end").on("change", applyFilters);
 }
 
 function populateFilters(data) {
@@ -142,8 +103,16 @@ function populateFilters(data) {
 function applyFilters() {
     if (!allData.length) return;
 
-    const hourLo = +d3.select("#filter-time-start").property("value");
-    const hourHi = +d3.select("#filter-time-end").property("value");
+    const timeStartStr = d3.select("#filter-time-start").property("value");
+    const timeEndStr = d3.select("#filter-time-end").property("value");
+
+    const getMinutes = (str) => {
+        const [h, m] = str.split(":").map(Number);
+        return h * 60 + m;
+    };
+
+    const minLo = getMinutes(timeStartStr);
+    const minHi = getMinutes(timeEndStr);
 
     const selectedDays = [];
     d3.selectAll("#filter-day-container input:checked").each(function () { selectedDays.push(this.value); });
@@ -158,7 +127,7 @@ function applyFilters() {
     d3.selectAll("#filter-light-container input:checked").each(function () { selectedLight.push(this.value); });
 
     const filtered = allData.filter(d => {
-        const timeMatch = d.hour >= hourLo && d.hour <= hourHi;
+        const timeMatch = d.minutes >= minLo && d.minutes <= minHi;
         const dayMatch = selectedDays.length === 0 || selectedDays.includes(d.day.toString());
         const monthMatch = selectedMonths.length === 0 || selectedMonths.includes(d.month);
         const weatherMatch = selectedWeather.length === 0 || selectedWeather.includes(d.weather);
