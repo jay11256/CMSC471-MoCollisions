@@ -1,133 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoCollisions Data Visualization</title>
-    <!-- Bootstrap 5 CSS -->
+    <title>MoCollisions &mdash; Montgomery County Crash Explorer</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
-    <div class="container mt-5">
-        <header class="text-center">
-            <h1 class="title">MoCollisions Visualization</h1>
-            <p class="subtitle">Exploring crash reporting data with interactive analytics</p>
-        </header>
-
-        <main>
-            <div class="filter-container mb-4">
-                <div class="row g-3">
-                    <div class="col-md-4 col-sm-12">
-                        <span class="form-label d-block">Time of day</span>
-                        <div class="time-input-controls">
-                            <div class="row g-2 align-items-center">
-                                <div class="col-5">
-                                    <input type="time" id="filter-time-start" class="form-control" value="00:00">
-                                </div>
-                                <div class="col-2 text-center text-muted">to</div>
-                                <div class="col-5">
-                                    <input type="time" id="filter-time-end" class="form-control" value="23:59">
-                                </div>
-                            </div>
-                            <div class="time-range-axis small text-muted mt-1">
-                                <span>(HH:MM)</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2 col-sm-6">
-                        <label class="form-label">Day of Week</label>
-                        <div id="filter-day-container" class="checkbox-group scrollable-group">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="1" id="day-1">
-                                <label class="form-check-label" for="day-1">Mon</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="2" id="day-2">
-                                <label class="form-check-label" for="day-2">Tue</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="3" id="day-3">
-                                <label class="form-check-label" for="day-3">Wed</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="4" id="day-4">
-                                <label class="form-check-label" for="day-4">Thu</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="5" id="day-5">
-                                <label class="form-check-label" for="day-5">Fri</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="6" id="day-6">
-                                <label class="form-check-label" for="day-6">Sat</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="0" id="day-0">
-                                <label class="form-check-label" for="day-0">Sun</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2 col-sm-6">
-                        <label class="form-label">Month</label>
-                        <div id="filter-month-container" class="checkbox-group scrollable-group">
-                            <!-- Months 0-11 -->
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="0" id="m-0"><label class="form-check-label" for="m-0">Jan</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="1" id="m-1"><label class="form-check-label" for="m-1">Feb</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="2" id="m-2"><label class="form-check-label" for="m-2">Mar</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="3" id="m-3"><label class="form-check-label" for="m-3">Apr</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="4" id="m-4"><label class="form-check-label" for="m-4">May</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="5" id="m-5"><label class="form-check-label" for="m-5">Jun</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="6" id="m-6"><label class="form-check-label" for="m-6">Jul</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="7" id="m-7"><label class="form-check-label" for="m-7">Aug</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="8" id="m-8"><label class="form-check-label" for="m-8">Sep</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="9" id="m-9"><label class="form-check-label" for="m-9">Oct</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="10" id="m-10"><label class="form-check-label" for="m-10">Nov</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="11" id="m-11"><label class="form-check-label" for="m-11">Dec</label></div>
-                        </div>
-                    </div>
-                    <div class="col-md-2 col-sm-6">
-                        <label class="form-label">Weather</label>
-                        <div id="filter-weather-container" class="checkbox-group scrollable-group">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                    <div class="col-md-2 col-sm-6">
-                        <label class="form-label">Light Level</label>
-                        <div id="filter-light-container" class="checkbox-group scrollable-group">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="loading" class="text-center my-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading data...</span>
-                </div>
-                <p class="mt-2 text-muted">Loading crash reporting data (87MB)...</p>
-            </div>
-
-            <div id="vis">
-                <!-- D3 Visualization will be injected here -->
-            </div>
-            <div id="tooltip"></div>
-        </main>
-
-        <footer class="mt-5 text-center text-muted">
-            <small>🤔🤔🤔</small>
-        </footer>
+    <div id="loading-overlay">
+        <div class="loader-card">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="loader-text">Loading 213k Montgomery County crashes&hellip;</div>
+            <div class="loader-sub">Crunching ten years of data</div>
+        </div>
     </div>
 
-    <!-- D3.js v7 -->
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand">
+                <span class="brand-mark"></span>
+                <div>
+                    <h1>MoCollisions</h1>
+                    <p>What's really driving crashes in Montgomery County, MD &mdash; 2015 to 2025</p>
+                </div>
+            </div>
+            <div class="header-meta">
+                <button id="reset-filters" class="btn btn-outline-light btn-sm">Reset all filters</button>
+                <a class="header-link" href="https://catalog.data.gov/dataset/crash-reporting-incidents-data" target="_blank" rel="noopener">Data source</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <!-- KPI Row -->
+        <section class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">Crashes in view</div>
+                <div class="kpi-value" id="kpi-total">&mdash;</div>
+                <div class="kpi-sub" id="kpi-total-sub">of <span id="kpi-total-all">&mdash;</span> total</div>
+            </div>
+            <div class="kpi-card severity-fatal">
+                <div class="kpi-label">Fatal injuries</div>
+                <div class="kpi-value" id="kpi-fatal">&mdash;</div>
+                <div class="kpi-sub" id="kpi-fatal-rate">&mdash; per 1,000 crashes</div>
+            </div>
+            <div class="kpi-card severity-serious">
+                <div class="kpi-label">Serious injuries</div>
+                <div class="kpi-value" id="kpi-serious">&mdash;</div>
+                <div class="kpi-sub" id="kpi-serious-rate">&mdash; per 1,000 crashes</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Driver-at-fault</div>
+                <div class="kpi-value" id="kpi-fault">&mdash;</div>
+                <div class="kpi-sub">share of crashes</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Alcohol or drug</div>
+                <div class="kpi-value" id="kpi-substance">&mdash;</div>
+                <div class="kpi-sub">share of crashes</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Distracted</div>
+                <div class="kpi-value" id="kpi-distracted">&mdash;</div>
+                <div class="kpi-sub">share of known crashes</div>
+            </div>
+        </section>
+
+        <!-- Active filter chips -->
+        <section id="active-filters" class="active-filters"></section>
+
+        <div class="dashboard-grid">
+
+            <!-- LEFT COLUMN: filters -->
+            <aside class="filter-rail">
+                <h2 class="rail-title">Filters</h2>
+                <p class="rail-help">Click any chart to drill in. All views update together.</p>
+
+                <div class="filter-block">
+                    <label class="filter-label">Years</label>
+                    <div id="filter-year" class="chip-row"></div>
+                </div>
+
+                <div class="filter-block">
+                    <label class="filter-label">Time of day</label>
+                    <div class="time-controls">
+                        <input type="time" id="filter-time-start" class="form-control form-control-sm" value="00:00">
+                        <span class="time-sep">to</span>
+                        <input type="time" id="filter-time-end" class="form-control form-control-sm" value="23:59">
+                    </div>
+                </div>
+
+                <div class="filter-block">
+                    <label class="filter-label">Day of week</label>
+                    <div id="filter-dow" class="chip-row"></div>
+                </div>
+
+                <div class="filter-block">
+                    <label class="filter-label">Month</label>
+                    <div id="filter-month" class="chip-row"></div>
+                </div>
+
+                <div class="filter-block">
+                    <label class="filter-label">Severity</label>
+                    <div id="filter-severity" class="chip-col"></div>
+                </div>
+
+                <div class="filter-block">
+                    <label class="filter-label">Weather</label>
+                    <div id="filter-weather" class="chip-col"></div>
+                </div>
+
+                <div class="filter-block">
+                    <label class="filter-label">Light</label>
+                    <div id="filter-light" class="chip-col"></div>
+                </div>
+
+                <div class="filter-block">
+                    <label class="filter-label">Surface</label>
+                    <div id="filter-surface" class="chip-col"></div>
+                </div>
+            </aside>
+
+            <!-- RIGHT: main visualisations -->
+            <section class="main-views">
+
+                <div class="panel map-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Crashes across Montgomery County</h3>
+                            <p class="panel-sub" id="map-sub">ZIP-code choropleth &middot; click a region to filter</p>
+                        </div>
+                        <div class="panel-controls">
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Map view">
+                                <button class="btn btn-outline-primary active" data-map="choropleth">Choropleth</button>
+                                <button class="btn btn-outline-primary" data-map="hex">Hex density</button>
+                            </div>
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Map metric">
+                                <button class="btn btn-outline-secondary active" data-metric="total">Total</button>
+                                <button class="btn btn-outline-secondary" data-metric="severe">Severe + fatal</button>
+                                <button class="btn btn-outline-secondary" data-metric="rate">Severity rate</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="map" class="chart-area map-area"></div>
+                    <div class="map-legend" id="map-legend"></div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">Crashes over time</h3>
+                            <p class="panel-sub">Monthly counts &middot; drag to filter a date range</p>
+                        </div>
+                    </div>
+                    <div id="timeseries" class="chart-area"></div>
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">When crashes happen</h3>
+                                <p class="panel-sub">Hour &times; day-of-week &middot; click a cell to filter</p>
+                            </div>
+                        </div>
+                        <div id="heatmap" class="chart-area"></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Severity breakdown</h3>
+                                <p class="panel-sub">Click a category to drill down</p>
+                            </div>
+                            <div class="panel-controls">
+                                <select id="severity-by" class="form-select form-select-sm">
+                                    <option value="weather">By weather</option>
+                                    <option value="light">By light</option>
+                                    <option value="surface">By road surface</option>
+                                    <option value="collision">By collision type</option>
+                                    <option value="distraction">By driver distraction</option>
+                                    <option value="substance">By driver substance</option>
+                                    <option value="vehicle">By vehicle type</option>
+                                    <option value="speed">By speed limit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="stacked-bar" class="chart-area"></div>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Risk-factor lift</h3>
+                                <p class="panel-sub">How much more often a condition leads to a serious or fatal crash, vs. the baseline rate</p>
+                            </div>
+                            <div class="panel-controls">
+                                <select id="risk-by" class="form-select form-select-sm">
+                                    <option value="weather">Weather</option>
+                                    <option value="light">Light</option>
+                                    <option value="surface">Road surface</option>
+                                    <option value="collision">Collision type</option>
+                                    <option value="substance" selected>Driver substance</option>
+                                    <option value="distraction">Driver distraction</option>
+                                    <option value="vehicle">Vehicle type</option>
+                                    <option value="speed">Speed limit</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="risk-chart" class="chart-area"></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Top collision types</h3>
+                                <p class="panel-sub">Click a bar to filter</p>
+                            </div>
+                        </div>
+                        <div id="collision-bar" class="chart-area"></div>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Hourly pattern</h3>
+                                <p class="panel-sub">Crash counts by hour of day</p>
+                            </div>
+                        </div>
+                        <div id="hourly-chart" class="chart-area"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h3 class="panel-title">Vehicle types involved</h3>
+                                <p class="panel-sub">Click a bar to filter</p>
+                            </div>
+                        </div>
+                        <div id="vehicle-bar" class="chart-area"></div>
+                    </div>
+                </div>
+
+                <div class="panel insights-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3 class="panel-title">What this data is telling us</h3>
+                            <p class="panel-sub">Auto-generated from the current filter selection</p>
+                        </div>
+                    </div>
+                    <ul id="insights" class="insights-list"></ul>
+                </div>
+
+            </section>
+        </div>
+
+        <footer class="app-footer">
+            <span>Built with D3 v7 &middot; Data: <a href="https://catalog.data.gov/dataset/crash-reporting-incidents-data" target="_blank" rel="noopener">Montgomery County Crash Reporting &mdash; Incidents Data</a></span>
+        </footer>
+    </main>
+
+    <div id="tooltip" class="tooltip-card"></div>
+
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <!-- Custom Script -->
+    <script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
     <script src="js/script.js"></script>
 </body>
-
 </html>

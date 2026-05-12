@@ -1,0 +1,119 @@
+{
+  "total_rows": 213719,
+  "year_min": 2015,
+  "year_max": 2026,
+  "lat_bounds": [
+    38.9137,
+    39.3979
+  ],
+  "lon_bounds": [
+    -77.4929,
+    -76.8677
+  ],
+  "categories": {
+    "severity": [
+      "No Apparent Injury",
+      "Possible Injury",
+      "Suspected Minor Injury",
+      "Suspected Serious Injury",
+      "Fatal Injury",
+      "Unknown"
+    ],
+    "weather": [
+      "Clear",
+      "Cloudy",
+      "Fog",
+      "Other / Unknown",
+      "Rain",
+      "Severe Winds",
+      "Sleet / Ice",
+      "Snow",
+      "Unknown"
+    ],
+    "light": [
+      "Dark",
+      "Dark - Lighted",
+      "Dark - Unlit",
+      "Dawn",
+      "Daylight",
+      "Dusk",
+      "Other / Unknown",
+      "Unknown"
+    ],
+    "surface": [
+      "Debris / Water",
+      "Dry",
+      "Ice / Snow",
+      "Other / Unknown",
+      "Unknown",
+      "Wet"
+    ],
+    "collision": [
+      "Angle",
+      "Head-On",
+      "Other",
+      "Rear-End",
+      "Sideswipe",
+      "Single Vehicle",
+      "Turning",
+      "Unknown"
+    ],
+    "distraction": [
+      "Eating / Drinking",
+      "External distraction",
+      "Inattentive",
+      "Looked but did not see",
+      "Not Distracted",
+      "Other distraction",
+      "Phone / Electronics",
+      "Unknown"
+    ],
+    "substance": [
+      "Alcohol",
+      "Alcohol + Drug suspected",
+      "Combined",
+      "Drug",
+      "Medication",
+      "None",
+      "Unknown"
+    ],
+    "vehicle": [
+      "Bus",
+      "Emergency",
+      "Motorcycle",
+      "Other",
+      "Passenger Car",
+      "Pickup",
+      "SUV",
+      "Truck",
+      "Unknown",
+      "Van"
+    ],
+    "at_fault": [
+      "No",
+      "Unknown",
+      "Yes"
+    ],
+    "route": [
+      "Bicycle Route",
+      "County",
+      "County Route",
+      "Crossover",
+      "Government",
+      "Government Route",
+      "Interstate (State)",
+      "Local Route",
+      "Maryland (State)",
+      "Maryland (State) Route",
+      "Municipality",
+      "Municipality Route",
+      "Other Public Roadway",
+      "Private Route",
+      "Ramp",
+      "Service Road",
+      "Spur",
+      "US (State)",
+      "Unknown"
+    ]
+  }
+}
