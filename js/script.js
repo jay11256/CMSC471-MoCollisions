@@ -1131,7 +1131,7 @@ function drawRisk() {
 
 
 // ============================================================
-// Hourly chart (bar by hour, colored by severity rate)
+// Hourly chart (bar by hour)
 // ============================================================
 
 function drawHourlyChart(data) {
@@ -1147,9 +1147,6 @@ function drawHourlyChart(data) {
         b.total++;
         if (c.severity === sevSerious || c.severity === sevFatal) b.severe++;
     }
-
-    const maxRate = d3.max(buckets, b => b.total ? b.severe / b.total : 0) || 0.01;
-    const colour = d3.scaleSequential(d3.interpolateInferno).domain([0, maxRate * 1.2]);
 
     const rect = container.node().getBoundingClientRect();
     const margin = { top: 16, right: 12, bottom: 28, left: 40 };
@@ -1176,7 +1173,7 @@ function drawHourlyChart(data) {
         .attr("y", d => y(d.total))
         .attr("width", x.bandwidth())
         .attr("height", d => h - y(d.total))
-        .attr("fill", d => d.total ? colour(d.severe / d.total) : "rgba(255,255,255,0.05)")
+        .attr("fill", d => d.total ? "#ed9a51" : "rgba(255,255,255,0.05)")
         .attr("rx", 2)
         .style("cursor", "pointer")
         .on("mousemove", function (event, d) {
@@ -1195,17 +1192,6 @@ function drawHourlyChart(data) {
             d3.select("#filter-time-end").property("value", fmt(d.hour + 1));
             render();
         });
-
-    // Legend (color = severity rate)
-    const lgW = 110, lgH = 6;
-    const lg = svg.append("g").attr("transform", `translate(${w - lgW - 4},${-12})`);
-    const lgScale = d3.scaleLinear().domain([0, maxRate * 1.2]).range([0, lgW]);
-    const lgGrad = svg.append("defs").append("linearGradient").attr("id", "hourly-lg-grad");
-    for (let i = 0; i <= 6; i++)
-        lgGrad.append("stop").attr("offset", (i / 6 * 100) + "%").attr("stop-color", colour(i / 6 * maxRate * 1.2));
-    lg.append("rect").attr("width", lgW).attr("height", lgH).attr("fill", "url(#hourly-lg-grad)").attr("rx", 2);
-    lg.append("text").attr("y", -2).attr("font-size", 10).attr("fill", "var(--text-muted)").text("low severity rate");
-    lg.append("text").attr("x", lgW).attr("y", -2).attr("text-anchor", "end").attr("font-size", 10).attr("fill", "var(--text-muted)").text("high");
 }
 
 
