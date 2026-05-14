@@ -200,7 +200,13 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: var(--bg);
+    padding: 0.5rem 0;
     margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
     min-height: 0;
 }
 
@@ -229,6 +235,25 @@ body {
 .active-chip .close {
     opacity: 0.7;
     font-size: 0.85rem;
+}
+
+.clear-all-chip {
+    display: inline-flex;
+    align-items: center;
+    background: none;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-left: 0.25rem;
+}
+
+.clear-all-chip:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
 }
 
 /* Dashboard grid */

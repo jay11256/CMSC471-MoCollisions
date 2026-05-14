@@ -412,7 +412,7 @@ function drawActiveChips() {
     }
     if (f.zip) chips.push({ key: "zip", label: "ZIP", value: f.zip, text: f.zip });
 
-    cont.selectAll("span")
+    cont.selectAll("span.active-chip")
         .data(chips)
         .join("span")
         .attr("class", "active-chip")
@@ -430,6 +430,13 @@ function drawActiveChips() {
             syncRailChips();
             render();
         });
+
+    if (chips.length > 0) {
+        cont.append("span")
+            .attr("class", "clear-all-chip")
+            .text("Clear all")
+            .on("click", () => d3.select("#reset-filters").dispatch("click"));
+    }
 }
 
 function syncRailChips() {
