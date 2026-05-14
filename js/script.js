@@ -48,7 +48,7 @@ const state = {
     },
     mapMode: "choropleth", // or "hex"
     mapMetric: "total",    // total | severe | rate
-    severityBy: "weather",
+    severityBy: "speed",
     riskBy: "substance",
     zipForCrash: null,     // pre-computed zip code per crash (filled in later)
 };
@@ -872,69 +872,77 @@ function drawStackedBar() {
         .slice(0, 12);
 
     const rect = container.node().getBoundingClientRect();
-    const margin = { top: 12, right: 20, bottom: 50, left: 60 };
+    const margin = { top: 12, right: 12, bottom: 72, left: 110 };
     const w = rect.width - margin.left - margin.right;
-    const h = Math.max(260, groups.length * 24) - margin.top - margin.bottom;
+    const h = Math.max(260, groups.length * 28) - margin.top - margin.bottom;
 
-    const svg = container.append("svg")
+    const rootSvg = container.append("svg")
         .attr("width", w + margin.left + margin.right)
-        .attr("height", h + margin.top + margin.bottom)
-        .append("g")
+        .attr("height", h + margin.top + margin.bottom);
+
+    const clipId = "stacked-bar-clip";
+    rootSvg.append("defs").append("clipPath").attr("id", clipId)
+        .append("rect").attr("width", w).attr("height", h);
+
+    const svg = rootSvg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const y = d3.scaleBand().domain(groups.map(d => d.key)).range([0, h]).padding(0.15);
-    const x = d3.scaleLinear().domain([0, d3.max(groups, d => d.total) || 1]).nice().range([0, w]);
+    const y = d3.scaleBand().domain(groups.map(d => d.key)).range([0, h]).padding(0.18);
 
     svg.append("g").attr("class", "axis").attr("transform", `translate(0,${h})`)
-        .call(d3.axisBottom(x).ticks(5).tickFormat(d3.format("~s")));
+        .call(d3.axisBottom(d3.scaleLinear().domain([0, 1]).range([0, w])).ticks(5).tickFormat(d3.format(".0%")))
+        .call(g => g.select(".tick:first-child text").attr("text-anchor", "start"))
+        .call(g => g.select(".tick:last-child text").attr("text-anchor", "end"));
     svg.append("g").attr("class", "axis").call(d3.axisLeft(y));
 
-    const grp = svg.selectAll("g.row").data(groups).join("g").attr("class", "row")
+    const grp = svg.append("g").attr("clip-path", `url(#${clipId})`)
+        .selectAll("g.row").data(groups).join("g").attr("class", "row")
         .attr("transform", d => `translate(0,${y(d.key)})`);
 
+    // Use integer cumulative sums → pixel positions to guarantee bars end exactly at w
     grp.each(function (d) {
         const sel = d3.select(this);
-        let xPos = 0;
+        let cumLeft = 0;
         d.sev.forEach((c, i) => {
-            if (c === 0) return;
-            sel.append("rect")
-                .attr("x", x(xPos))
-                .attr("y", 0)
-                .attr("height", y.bandwidth())
-                .attr("width", x(xPos + c) - x(xPos))
-                .attr("fill", SEVERITY_COLORS[i])
-                .attr("opacity", 0.95)
-                .on("mousemove", function (event) {
-                    const pct = (c / d.total * 100).toFixed(1);
-                    showTip(`<strong>${d.key}</strong> &middot; ${SEVERITY_ORDER[i]}
-                        <div class="tt-row"><span class="tt-k">Crashes</span><span>${d3.format(",")(c)}</span></div>
-                        <div class="tt-row"><span class="tt-k">Share</span><span>${pct}%</span></div>`, event);
-                })
-                .on("mouseout", hideTip)
-                .on("click", function () {
-                    if (groupKey !== "speed") {
-                        state.filters[groupKey].add(state.catIndex[groupKey][d.key]);
-                        d3.selectAll(`#filter-${groupKey} .chip`).each(function (cd) {
-                            d3.select(this).classed("active", state.filters[groupKey].has(cd.value));
-                        });
-                        render();
-                    }
-                });
-            xPos += c;
+            const cumRight = cumLeft + c;
+            if (c > 0) {
+                const px0 = cumLeft / d.total * w;
+                const px1 = cumRight / d.total * w;
+                sel.append("rect")
+                    .attr("x", px0)
+                    .attr("y", 0)
+                    .attr("height", y.bandwidth())
+                    .attr("width", Math.max(0, px1 - px0))
+                    .style("fill", SEVERITY_COLORS[i])
+                    .attr("opacity", 0.95)
+                    .on("mousemove", function (event) {
+                        const pct = c / d.total;
+                        showTip(`<strong>${d.key}</strong> &middot; ${SEVERITY_ORDER[i]}
+                            <div class="tt-row"><span class="tt-k">Crashes</span><span>${d3.format(",")(c)}</span></div>
+                            <div class="tt-row"><span class="tt-k">Share</span><span>${(pct * 100).toFixed(1)}%</span></div>`, event);
+                    })
+                    .on("mouseout", hideTip)
+                    .on("click", function () {
+                        if (groupKey !== "speed") {
+                            state.filters[groupKey].add(state.catIndex[groupKey][d.key]);
+                            d3.selectAll(`#filter-${groupKey} .chip`).each(function (cd) {
+                                d3.select(this).classed("active", state.filters[groupKey].has(cd.value));
+                            });
+                            render();
+                        }
+                    });
+            }
+            cumLeft = cumRight;
         });
-        sel.append("text")
-            .attr("x", x(d.total) + 6)
-            .attr("y", y.bandwidth() / 2 + 4)
-            .attr("font-size", 11)
-            .attr("fill", "var(--text-soft)")
-            .text(d3.format(",")(d.total));
     });
 
-    // Legend
+    // Legend — 3 rows of 2, wide enough for long severity labels
+    const legendItemW = Math.floor(w / 2);
     const legend = svg.append("g").attr("transform", `translate(0,${h + 28})`);
     SEVERITY_ORDER.forEach((s, i) => {
-        if (i >= 5) return; // hide Unknown
-        const g = legend.append("g").attr("transform", `translate(${i * 130},0)`);
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const g = legend.append("g").attr("transform", `translate(${col * legendItemW},${row * 16})`);
         g.append("rect").attr("width", 10).attr("height", 10).attr("y", -8).attr("fill", SEVERITY_COLORS[i]).attr("rx", 2);
         g.append("text").attr("x", 14).attr("y", 1).attr("font-size", 10).attr("fill", "var(--text-soft)").text(s);
     });
