@@ -23,25 +23,25 @@ explain what changed.
 ## Team Contribution Breakdown:
 
 Charles Phan
-    Early brainstorming (what questions the dashboard should actually answer and which visualizations are most suitable)
-    Implemented initial visualizations (bar charts) and filters
-    Documentation (this README.md)
+- Early brainstorming (what questions the dashboard should actually answer and which visualizations are most suitable)
+- Implemented initial visualizations (bar charts) and filters
+- Documentation (this README.md)
 
 Jason Liu
-    Setup of project repo and skeleton
-    Preprocessed (filtering, aggregation) data for easier selection and summarization
-    Implemented early visualizations (bar charts and severity breakdown) and filters
+- Setup of project repo and skeleton
+- Preprocessed (filtering, aggregation) data for easier selection and summarization
+- Implemented early visualizations (bar charts and severity breakdown) and filters
 
 
 Dheer Guda
-    Displayed the summary stats panel (total crashes, fatalities, distraction rate, etc.) and takeaways panel (at the bottom) for easier interpretation of data
-    Implemented the heatmap (cloropleth) visualization, as well as more bar charts and the "When crashes happen" heatmap
-    Reformatted the page for a cleaner look
+- Displayed the summary stats panel (total crashes, fatalities, distraction rate, etc.) and takeaways panel (at the bottom) for easier interpretation of data
+- Implemented the heatmap (cloropleth) visualization, as well as more bar charts and the "When crashes happen" heatmap
+- Reformatted the page for a cleaner look
 
 Raghav Chakravarthy
-    Improved color-coding
-    Implemented the heatmap (hex density) and severity breakdown visualizations
-    Fixed bugs with filtering and coloring
+- Improved color-coding
+- Implemented the heatmap (hex density) and severity breakdown visualizations
+- Fixed bugs with filtering and coloring
 
 
 
