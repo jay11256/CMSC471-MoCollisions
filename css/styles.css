@@ -519,7 +519,6 @@ svg text {
 }
 
 .hex {
-    fill: var(--primary);
     stroke: rgba(7, 11, 25, 0.4);
     stroke-width: 0.4;
     cursor: pointer;

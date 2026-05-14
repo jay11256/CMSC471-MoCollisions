@@ -555,7 +555,7 @@ function drawMap() {
             .extent([[0, 0], [w, h]]);
         const bins = hex(points);
         const maxBin = d3.max(bins, b => b.length) || 1;
-        const hexColor = d3.scaleSequentialSqrt(d3.interpolateInferno).domain([0, maxBin]);
+        const hexColor = d3.scaleSequentialSqrt(colorScale.interpolator()).domain([0, maxBin]);
 
         svg.append("g")
             .attr("class", "hexes")
