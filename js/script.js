@@ -55,15 +55,22 @@ const state = {
 
 const tooltip = d3.select("#tooltip");
 
+function _tipPos(evt) {
+    const tipW = tooltip.node().offsetWidth || 200;
+    const spaceRight = window.innerWidth - evt.clientX;
+    const left = spaceRight > tipW + 20
+        ? evt.clientX + 14
+        : evt.clientX - tipW - 14;
+    return { left: left + "px", top: (evt.clientY + 14) + "px" };
+}
 function showTip(html, evt) {
-    tooltip.html(html)
-        .style("opacity", 1)
-        .style("left", (evt.clientX + 14) + "px")
-        .style("top", (evt.clientY + 14) + "px");
+    tooltip.html(html).style("opacity", 1);
+    const pos = _tipPos(evt);
+    tooltip.style("left", pos.left).style("top", pos.top);
 }
 function moveTip(evt) {
-    tooltip.style("left", (evt.clientX + 14) + "px")
-           .style("top", (evt.clientY + 14) + "px");
+    const pos = _tipPos(evt);
+    tooltip.style("left", pos.left).style("top", pos.top);
 }
 function hideTip() { tooltip.style("opacity", 0); }
 
